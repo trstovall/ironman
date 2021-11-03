@@ -19,3 +19,17 @@ class Bits(object):
     def __setattribute__(self, name, attr):
         return super().__setattribute__(name, attr)
 
+
+class Frame(object):
+    
+    def __init__(self):
+        return super().__init__()
+
+
+class Port(object):
+    pass
+
+
+class Function(object):
+    pass
+
