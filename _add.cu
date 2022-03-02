@@ -1,5 +1,6 @@
 
-#include "_add.cuh"
+#include <stdio.h>
+#include <stdlib.h>
 
 #define DIM 1000
 
@@ -40,19 +41,31 @@ __global__ void kernel(unsigned char *p) {
   int z = x + y * gridDim.x;
   
   p[z*4 + 0] = 255 * julia(x,y);
-  p[z*4 + 1] = 0;
-  p[z*4 + 2] = 0;
-  p[z*4 + 3] = 255;
+//  p[z*4 + 1] = 0;
+//  p[z*4 + 2] = 0;
+//  p[z*4 + 3] = 255;
 }
 
 int main(void) {
-  CPUBitmap bm(DIM, DIM);
+  unsigned char *bm = (void*) malloc(DIM*DIM);
   unsigned char *bm_dev;
   
-  cudaMalloc((void**)&bm_dev, bm.image_size());
+  cudaMalloc((void**)&bm_dev, DIM*DIM);
   kernel<<<DIM, DIM, 1>>>(bm_dev);
-  cudaMemcpy(bm.get_ptr(), bm_dev, bm.image_size(), cudaMemcpyDeviceToHost);
+  cudaMemcpy(bm, bm_dev, DIM*DIM, cudaMemcpyDeviceToHost);
   
-  bm.display_and_exit();
+  img = fopen("julia.pgm", "wb");
+  if (img == NULL) {
+    perror("ERROR: Cannot open output file");
+    exit(EXIT_FAILURE);
+  }
+
+  fprintf(img, "P5\n");
+  fprintf(img, "%d %d\n", DIM, DIM);
+  fprintf(img, "255\n");
+
+  for (int i=0 ;i<DIM*DIM; i++)
+    fputc(bm[i]);
+
   cudaFree(bm_dev);
 }
